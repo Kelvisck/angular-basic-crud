@@ -1,29 +1,17 @@
-# Etapa 1: Build do Angular
-FROM node:22.14 as build
+FROM node:22.14-alpine
 
-# Definindo diretório de trabalho
 WORKDIR /app
 
-# Copiar o package.json e o package-lock.json
-COPY package*.json ./
+# Primeiro copia os arquivos de configuração
+COPY package.json package-lock.json* ./
 
-# Instalar as dependências
-RUN npm install
+# Instala as dependências
+RUN npm install -g @angular/cli && \
+    npm install
 
-# Copiar o código fonte
+# Copia o restante dos arquivos
 COPY . .
 
-# Build do projeto Angular
-RUN npm run build --prod
+EXPOSE 4200
 
-# Etapa 2: Servir o aplicativo
-FROM nginx:alpine
-
-# Copiar os arquivos de build do Angular para o Nginx
-COPY --from=build /app/dist/ /usr/share/nginx/html
-
-# Expor a porta padrão do Nginx
-EXPOSE 80
-
-# Iniciar o Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["ng", "serve", "--host", "0.0.0.0", "--disable-host-check"]
